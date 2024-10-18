@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>success</title>
+</head>
+<body>
+    <h2>Success</h2>
+    {% for report in reports %}
+        {{report.name}}
+        {{report.phone}}
+        {{report.latitude}}
+        {{report.longitude}}
+        <div>
+            <a href="{{report.image.url}}">
+                <img src="{{report.image.url}}" style="width:30%;">
+            </a>
+        </div>
+        <br>
+    {% endfor %}
+    <p><a href="{% url 'report:report_create' %}"돌아가기</p>
+</body>
+</html>
