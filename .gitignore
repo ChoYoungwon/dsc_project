@@ -8,6 +8,8 @@ db.sqlite3-journal
 media
 .env
 venv/
+info/gis_convert
+
 
 
 
