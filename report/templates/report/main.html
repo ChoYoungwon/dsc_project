@@ -1,0 +1,96 @@
+{% extends 'report/base.html' %}
+{% load static %}
+{% block extra-style %}
+<style>
+    .content {
+        position: relative;
+        top: 10vh;
+    }
+    .main {
+      margin-top: 10vh;
+    }
+</style>
+{% endblock %}
+
+{% block main_area %}
+<div class="content">
+  <div class="container mt-2">
+    <div class="nav-pills-container">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link text-white bg-success" href="{% url 'report:report_create' %}">사진 업로드</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'info:info' %}">데이터 시각화</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="main">
+      <div class="row align-items-start justify-content-center">
+        <div class="col-8">
+          <h2 class="text-center"> : 우리 모두가 함께 만드는 지역사회 </h2>
+        </div>
+        <div class="col-4 d-flex flex-column align-items-center">
+          <form action="{% url 'report:report_create' %}" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="image-input">
+              <img id="image-preview" src="{% static 'image/photo.png' %}" alt="photo" style="width: 40vh; height: 40vh;">
+            </label>
+            <input type="file" id="image-input" name="image" accept="image/*" style="display: none;" onchange="previewImage(event)">
+            <button id = "gps-input" type="button" class="btn mt-4 btn-success" onclick="openMap()" style="width:40vh">
+              GPS 주소 탐색
+            </button>
+            <label for="latitude" style="display: none;">Latitude</label>
+            <input type="text" id="latitude" name="latitude" style="display: none;">
+
+            <label for="longitude" style="display: none;"></label>
+            <input type="text" id="longitude" name="longitude" style="display: none;">
+
+            <input type="submit" class="btn mt-4 btn-primary" style="width: 40vh; display: none;" value="제출하기">
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 이미지 미리보기 함수
+  function previewImage(event) {
+    const file = event.target.files[0];  // 파일을 선택한 이벤트에서 첫 번째 파일을 가져옴
+    const reader = new FileReader();  // FileReader 객체 생성
+
+    reader.onload = function(e) {
+      // 이미지가 로드되었을 때, 이미지 미리보기
+      document.getElementById('image-preview').src = e.target.result;  // 미리보기 이미지 변경
+    }
+
+    if (file) {
+      reader.readAsDataURL(file);  // 파일을 읽어서 Data URL로 변환
+      checkInputs();
+    }
+  }
+
+  function openMap() {
+    window.open("{% url 'report:map' %}",
+    "위치 선택",
+    "left=300,top=150,width=650,height=550,scrollbars=no,resizable=yes");
+  }
+
+  function checkInputs() {
+    const imageInput = document.getElementById('image-input').files.length > 0;
+    const latitude = document.getElementById('latitude').value.trim() !== "";
+    const longitude = document.getElementById('longitude').value.trim() !== "";
+    console.log(imageInput, latitude, longitude);
+
+    if (imageInput && latitude && longitude) {
+      document.querySelector('input[type="submit"]').style.display = 'block';
+    }
+    else {
+      document.querySelector('input[type="submit"]').style.display = 'none';
+    }
+  }
+
+</script>
+{% endblock %}

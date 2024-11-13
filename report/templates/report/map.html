@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- 메타데이터 설정: 문자셋, 호환성, 뷰포트 설정 -->
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+    <title>네이버 지도 검색</title>
+    {% load static %}
+
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <!-- 네이버 지도 API 로드: 지오코딩 서브모듈 포함 -->
+    <script type="text/javascript" src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpClientId=uv0aer3lm7&submodules=geocoder"></script>
+    <!-- jQuery 라이브러리 로드 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.0.js"></script>
+
+    <!-- CSS: 지도와 검색창의 스타일 설정 -->
+    <style>
+        body {
+            display:flex;
+            align-content: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+        }
+        #map {
+            width: 98%;
+            height:80vh;
+            position: relative;
+            margin: 0 auto;
+            display:flex;
+            align-content: center;
+        } /* 지도 크기 설정 */
+        .search { position:absolute; z-index:1000; top:20px; left:10px; } /* 검색창 위치 설정 */
+        .search input {width:220px; height:30px; padding:0 10px; border:1px solid #5085BB; }
+        .search button {height:32px; padding:0 10px; background:#5085BB; color:white; border:none; cursor:pointer; }
+        #update-location {position:absolute; z-index:1000; bottom:25px; left:10px; padding:10px; background:#993333; color:white; border:none; cursor:pointer;}
+        #accuracy-info {position:absolute; z-index:1000; bottom:25px; right:10px; padding:10px; background:white; border:1px solid #993333; border-radius:5px;}
+
+        .icon {
+            position: absolute;
+            top: 40%;
+            right: 0;
+            z-index: 100;
+            padding: 5px 5px;
+            margin-right: 5px;
+            background-color: white;
+            border:1px solid #993333;
+            border-radius:5px;
+        }
+
+        .icon li {
+            list-style-type: none;
+            display: flex;
+            align-items: center;
+        }
+        .icon img {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+        }
+
+        /* 리스트를 지도와 가까운 위치로 조정 */
+        .col.align-content-center.text-start {
+            position: relative; /* 텍스트가 지도 쪽에 절대 위치하도록 설정 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 지도를 표시할 div 요소 -->
+    <div id="map">
+        <!-- 검색창 UI -->
+        <div class="search">
+            <input id="address" type="text" placeholder="검색할 주소를 입력하세요">
+            <button id="submit">검색</button>
+        </div>
+        <button id="update-location">현재 위치 갱신</button>
+        <div id="accuracy-info"></div>
+        <ol class="icon">
+            <li><img src="{% static '/image/circle.png' %}" alt="circle">오차범위</li>
+            <li><img src="{% static '/image/marker.png' %}" alt="circle">현재 위치</li>
+            <li><img src="{% static '/image/caution.png' %}" alt="circle">선택 위치</li>
+        </ol>
+    </div>
+    <div class="row mt-2">
+        <div class="col-10">
+            <div id="location-info"></div>
+        </div>
+        <div class="col-2 d-flex align-items-center justify-content-center">
+            <div id="out" class="d-flex w-100"></div>
+        </div>
+    </div>
+
+    <script>
+        // 지도를 생성하고 초기 설정
+        var map = new naver.maps.Map("map", {
+            center: new naver.maps.LatLng(37.3595316, 127.1052133), // 지도 초기 중심 좌표
+            zoom: 15,
+            mapTypeControl: true // 지도 타입 컨트롤을 표시
+        });
+
+        var selectedLatitude = null;
+        var selectedLongitude = null;
+        var marker = null;
+        var locationCircle = null;
+        var HOME_PATH = "{% static 'image' %}"
+        var user_marker = null;
+
+        // 마우스 커서를 포인터로 설정
+        map.setCursor('pointer');
+
+        function formatAccuracy(meters) {
+            if (meters >= 1000) {
+                return (meters / 1000).toFixed(1) + 'km';
+            }
+            return Math.round(meters) + 'm';
+        }
+
+        function getZoomLevel(accuracy) {
+            // 정확도에 따른 적절한 줌 레벨 설정
+            if (accuracy > 5000) return 12;      // 5km 이상
+            else if (accuracy > 1000) return 13; // 1km-5km
+            else if (accuracy > 500) return 14;  // 500m-1km
+            else if (accuracy > 200) return 15;  // 200m-500m
+            else return 16;                      // 200m 미만
+        }
+
+        function onSuccessGeolocation(position) {
+            var location = new naver.maps.LatLng(position.coords.latitude,
+                                                 position.coords.longitude);
+            var accuracy = position.coords.accuracy;
+
+            if (locationCircle) {
+                locationCircle.setMap(null);
+            }
+
+            if (marker) {
+                marker.setMap(null);
+            }
+
+            // 반경 100m의 원 생성 (일반적인 GPS 오차 범위 고려)
+            locationCircle = new naver.maps.Circle({
+                map: map,
+                center: location,
+                radius: accuracy,
+                fillColor: '#ff0000',
+                fillOpacity: 0.3,
+                strokeColor: '#ff0000',
+                strokeOpacity: 0.6,
+                strokeWeight: 2
+            });
+
+            marker = new naver.maps.Marker({
+                position: location,
+                map: map,
+                icon: {
+                        url: HOME_PATH + '/marker.png',
+                        size: new naver.maps.Size(35, 40),
+                        scaledSize: new naver.maps.Size(35, 40),
+                    }
+            })
+
+            // 정확도 정보 표시
+            $('#accuracy-info').html('위치 정확도: ' + formatAccuracy(accuracy) +
+                                   '<br>위치 측정 방법: ' +
+                                   (accuracy <= 100 ? 'GPS/Wi-Fi' :
+                                    accuracy <= 1000 ? 'Wi-Fi' : 'IP 기반'));
+
+            map.setCenter(location); // 얻은 좌표를 지도의 중심으로 설정합니다.
+            map.setZoom(getZoomLevel(accuracy)); // 지도의 줌 레벨을 변경합니다.
+
+            console.log('Coordinates: ' + location.toString());
+            console.log('Accuracy: ' + accuracy + ' meters');
+        }
+
+        function onErrorGeolocation() {
+            var center = map.getCenter();
+            alert('위치 정보를 가져오는데 실패했습니다.');
+        }
+
+        function updateCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(onSuccessGeolocation, onErrorGeolocation);
+            } else {
+                alert("이 브라우저에서는 Geolocation을 지원하지 않습니다.");
+            }
+        }
+
+        // 좌표로 주소를 검색하는 함수
+        function searchCoordinateToAddress(latlng) {
+
+            selectedLatitude = latlng.lat();
+            selectedLongitude = latlng.lng();
+
+            if (user_marker) {
+                user_marker.setMap(null);
+            }
+
+            // 좌표를 주소로 변환하는 역지오코딩 API 호출
+            naver.maps.Service.reverseGeocode({
+                coords: latlng,
+                orders: [
+                    naver.maps.Service.OrderType.ADDR, // 지번 주소 우선
+                    naver.maps.Service.OrderType.ROAD_ADDR // 도로명 주소
+                ].join(',')
+            }, function(status, response) {
+                if (status === naver.maps.Service.Status.ERROR) {
+                    return alert('Something Wrong!'); // 오류 발생 시 경고창 표시
+                }
+
+                // 응답 데이터를 처리하여 주소 목록 생성
+                var items = response.v2.results,
+                    address = '',
+                    htmlAddresses = [];
+
+                for (var i = 0, ii = items.length, item, addrType; i < ii; i++) {
+                    item = items[i];
+                    address = makeAddress(item) || '';
+                    addrType = item.name === 'roadaddr' ? '[도로명 주소]' : '[지번 주소]';
+                    htmlAddresses.push((i + 1) + '. ' + addrType + ' ' + address); // 주소 유형과 함께 주소 텍스트 생성
+                }
+
+                // 마커 표시
+                user_marker = new naver.maps.Marker({
+                    position: latlng,
+                    map: map,
+                    icon: {
+                        url: HOME_PATH + '/caution.png',
+                        size: new naver.maps.Size(30, 40),
+                        scaledSize: new naver.maps.Size(30, 40),
+                        origin: new naver.maps.Point(0, 0),
+                        anchor: new naver.maps.Point(12, 34)
+                    }
+                })
+
+                $('#location-info').html([
+                    '<div style="padding:10px;min-width:200px;line-height:150%;">',
+                    '<h5>선택 위치 주소</h5>',
+                    htmlAddresses.join('<br />'),
+                    '</div>'
+                ].join('\n'));
+
+                $('#out').html(
+                    '<button class="btn btn-primary w-75" onclick="sendCoordinate()">확인</button>'
+                )
+            });
+        }
+
+        // 입력된 주소를 좌표로 변환하는 함수
+        function searchAddressToCoordinate(address) {
+
+            if (user_marker) {
+                user_marker.setMap(null);
+            }
+
+            naver.maps.Service.geocode({
+                query: address
+            }, function(status, response) {
+                if (status === naver.maps.Service.Status.ERROR) {
+                    return alert('Something Wrong!'); // 오류 발생 시 경고창 표시
+                }
+
+                if (response.v2.meta.totalCount === 0) {
+                    return alert('totalCount' + response.v2.meta.totalCount); // 검색 결과가 없을 때 경고창
+                }
+
+                // 검색 결과에서 첫 번째 주소 정보 가져오기
+                var htmlAddresses = [],
+                    item = response.v2.addresses[0],
+                    point = new naver.maps.Point(item.x, item.y);
+
+                if (item.roadAddress) {
+                    htmlAddresses.push('[도로명 주소] ' + item.roadAddress);
+                }
+
+                if (item.jibunAddress) {
+                    htmlAddresses.push('[지번 주소] ' + item.jibunAddress);
+                }
+
+                if (item.englishAddress) {
+                    htmlAddresses.push('[영문명 주소] ' + item.englishAddress);
+                }
+
+                selectedLatitude = point.y;
+                selectedLongitude = point.x;
+
+                map.setCenter(point);
+
+                // 마커 표시
+                user_marker = new naver.maps.Marker({
+                    position: point,
+                    map: map,
+                    icon: {
+                        url: HOME_PATH + '/caution.png',
+                        size: new naver.maps.Size(30, 40),
+                        scaledSize: new naver.maps.Size(30, 40),
+                        origin: new naver.maps.Point(0, 0),
+                        anchor: new naver.maps.Point(12, 34)
+                    }
+                })
+            });
+        }
+
+        // 초기화 함수: 지도에 이벤트 추가 및 기본 주소 검색
+        function initGeocoder() {
+            map.addListener('click', function(e) {
+                searchCoordinateToAddress(e.coord); // 지도 클릭 시 좌표로 주소 검색
+            });
+
+            // Enter 키로 주소 검색
+            $('#address').on('keydown', function(e) {
+                var keyCode = e.which;
+                if (keyCode === 13) { // Enter Key
+                    searchAddressToCoordinate($('#address').val());
+                }
+            });
+
+            // 검색 버튼 클릭 시 주소 검색
+            $('#submit').on('click', function(e) {
+                e.preventDefault();
+                searchAddressToCoordinate($('#address').val());
+            });
+        }
+
+        // 주소 객체를 문자열로 변환하는 헬퍼 함수
+        function makeAddress(item) {
+            if (!item) return;
+
+            var name = item.name,
+                region = item.region,
+                land = item.land,
+                isRoadAddress = name === 'roadaddr';
+
+            var sido = '', sigugun = '', dongmyun = '', ri = '', rest = '';
+
+            if (hasArea(region.area1)) sido = region.area1.name;
+            if (hasArea(region.area2)) sigugun = region.area2.name;
+            if (hasArea(region.area3)) dongmyun = region.area3.name;
+            if (hasArea(region.area4)) ri = region.area4.name;
+
+            if (land) {
+                if (hasData(land.number1)) {
+                    if (hasData(land.type) && land.type === '2') {
+                        rest += '산';
+                    }
+                    rest += land.number1;
+                    if (hasData(land.number2)) rest += ('-' + land.number2);
+                }
+
+                if (isRoadAddress === true) {
+                    if (checkLastString(dongmyun, '면')) {
+                        ri = land.name;
+                    } else {
+                        dongmyun = land.name;
+                        ri = '';
+                    }
+                    if (hasAddition(land.addition0)) rest += ' ' + land.addition0.value;
+                }
+            }
+
+            return [sido, sigugun, dongmyun, ri, rest].join(' ');
+        }
+
+        // 헬퍼 함수: 지역 정보 확인
+        function hasArea(area) {
+            return !!(area && area.name && area.name !== '');
+        }
+
+        // 헬퍼 함수: 데이터 유효성 확인
+        function hasData(data) {
+            return !!(data && data !== '');
+        }
+
+        // 문자열의 마지막 확인
+        function checkLastString (word, lastString) {
+            return new RegExp(lastString + '$').test(word);
+        }
+
+        // 추가 주소 정보 확인
+        function hasAddition (addition) {
+            return !!(addition && addition.value);
+        }
+        // 네이버 지도 API의 JS 로드 완료 후 초기화 함수 실행
+        naver.maps.onJSContentLoaded = initGeocoder;
+
+        function sendCoordinate() {
+            if(window.opener) {
+                window.opener.document.getElementById('latitude').value = selectedLatitude;
+                window.opener.document.getElementById('longitude').value = selectedLongitude;
+                console.log(selectedLatitude);
+                console.log(selectedLongitude);
+                window.opener.checkInputs();
+                window.close();
+            } else {
+                alert("홈페이지에 다시 접속해주세요");
+            }
+        }
+
+        $(window).on("load", function() {
+            updateCurrentLocation();
+        });
+
+        $('#update-location').on('click', function() {
+            updateCurrentLocation();
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js" integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous"></script>
+</body>
+</html>

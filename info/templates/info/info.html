@@ -1,0 +1,33 @@
+{% extends 'report/base.html' %}
+{% load static %}
+{% block extra-style %}
+<style>
+    .content {
+        position: relative;
+        top: 10vh;
+    }
+    .main {
+      margin-top: 10vh;
+    }
+</style>
+{% endblock %}
+
+{% block main_area %}
+<div class="content">
+  <div class="container mt-2">
+    <div class="nav-pills-container">
+      <ul class="nav nav-pills">
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'report:report_create' %}">사진 업로드</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-white bg-success" href="{% url 'info:info' %}">데이터 시각화</a>
+        </li>
+      </ul>
+    </div>
+  <div class="main">
+
+  </div>
+  </div>
+</div>
+{% endblock %}

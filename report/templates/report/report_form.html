@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main</title>
+    {% load widget_tweaks %}
+</head>
+<body>
+    <h2>TEST</h2>
+    <form action="{% url 'report:report_create' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.name|attr:"placeholder:이름" }}<br>
+        {{ form.phone|attr:"placeholder:휴대폰 번호" }}<br>
+        {{ form.email|attr:"placeholder:이메일" }}<br>
+        {{ form.image }}<br>
+        {{ form.latitude|attr:"placeholder:위도" }}<br>
+        {{ form.longitude|attr:"placeholder:경도" }}<br>
+        <input type="submit" value="제출"/>
+    </form>
+</body>
+</html>
