@@ -10,3 +10,4 @@ django-environ==0.11.2
 geopandas
 shapely
 celery
+redis

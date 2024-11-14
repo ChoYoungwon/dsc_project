@@ -2,19 +2,15 @@ from pathlib import Path
 import environ
 import os
 
-env = environ.Env(
-    DEFUG=(bool, False)
-)
+env = environ.Env()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
 SECRET_KEY = env('SECRET_KEY')
-
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
-
+DEBUG = env('DEBUG')
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS') if not DEBUG else ['localhost', '127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -60,10 +56,7 @@ WSGI_APPLICATION = 'main.wsgi.application'
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db('DATABASE_URL')
 }
 
 
@@ -83,7 +76,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ko-KR'
 
 # TIME_ZONE = 'UTC'
 TIME_ZONE = 'Asia/Seoul'
@@ -104,8 +97,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Redis를 브로커로 사용하는 Celery 설정
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
