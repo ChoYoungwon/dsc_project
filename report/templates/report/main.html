@@ -4,7 +4,7 @@
 <style>
     .content {
         position: relative;
-        top: 0;
+        top: 15vh;
         padding-top: 70px;
     }
     h3 {
@@ -32,8 +32,12 @@
 
     /* 반응형 스타일 */
     @media (max-width: 768px) {
+        .content {
+            top: 10vh;
+            padding-top: 50px;
+        }
         #patchpoint {
-            width: 80vw; /* 뷰포트에 맞춰 이미지 크기 조정 */
+            width: 90vw; /* 뷰포트에 맞춰 이미지 크기 조정 */
             height: auto;
         }
         #image-preview {
@@ -70,7 +74,7 @@
 {% endblock %}
 
 {% block main_area %}
-<div class="content align-items-center" style="top: 15vh;">
+<div class="content align-items-center">
   <div class="row">
     <div class="inform col-12 col-md-7 d-flex flex-column justify-content-center align-items-center">
       <img id="patchpoint" src="{% static 'image/patchpoint.png' %}" alt="logo"><br>
