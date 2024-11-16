@@ -9,7 +9,7 @@ media
 .env
 venv/
 info/gis_convert
-
+*.out
 
 
 
