@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.views.generic import CreateView, ListView, TemplateView
+from django.views.generic import CreateView, DetailView, TemplateView
 from .models import Report
 from django.urls import reverse_lazy
 from info.tasks import make_priority_table
@@ -8,7 +8,9 @@ class ReportCreateView(CreateView):
     template_name = 'report/main.html'
     model = Report
     fields = ['image', 'latitude', 'longitude']
-    success_url = reverse_lazy('report:report_success')
+
+    def get_success_url(self):
+        return reverse_lazy('report:report_success', kwargs={'pk': self.object.pk})
 
     def form_invalid(self, form):
         print("Form is invalid")
@@ -20,7 +22,7 @@ class ReportCreateView(CreateView):
         make_priority_table.delay(form.instance.id)
         return response
 
-class ReportSuccessView(ListView):
+class ReportSuccessView(DetailView):
     template_name = 'report/report_success.html'
     model = Report
     context_object_name = 'reports'

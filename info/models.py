@@ -12,3 +12,7 @@ class Priority(models.Model):
     priority = models.IntegerField(null=True, blank=True)
     type = models.CharField(max_length=50, null=True, blank=True)
     traffic = models.IntegerField(null=True, blank=True)
+    date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ('priority', 'date')

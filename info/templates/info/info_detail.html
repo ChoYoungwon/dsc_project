@@ -63,7 +63,7 @@
 
     #map {
             width: 80%;
-            height: 98%;
+            height: 75vh;
             position: relative;
             margin: 0 auto;
             display:flex;
@@ -97,13 +97,23 @@
     <div class="row justify-content-center">
         <div class="col-6 d-flex justify-content-center">
             <div class="success-card text-start">
-                <h3 class="text-center">민원이 성공적으로 접수되었습니다.</h3>
-                <p class="text-head">1. 제출하신 사진</p>
-                <a href="{{ object.image.url }}">
-                    <img style="margin-top: 0;" src="{{ object.image.url }}" alt="제출 사진">
+                <h3 class="text-center">민원 세부 내용</h3>
+                <p class="text-head">1. 제출 사진</p>
+                <a href="{{ object.report.image.url }}">
+                    <img style="margin-top: 0;" src="{{ object.report.image.url }}" alt="제출 사진">
                 </a>
-                <p class="text-head">2. 신고 위치 (위도, 경도)</p>
-                <p style="margin-top:0">{{ object.latitude }}, {{ object.longitude }}</p><br>
+                <p class="text-head" style="margin-bottom: 0">2. 신고 위치 (위도, 경도)</p>
+                <p style="margin-top:0">- {{ object.report.latitude }}, {{ object.report.longitude }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">3. 링크ID</p>
+                <p style="margin-top:0">- {{ object.link_id}}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">4. 우선순위</p>
+                <p style="margin-top:0">- {{ object.priority }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">5. 포트홀 타입</p>
+                <p style="margin-top:0">- {{ object.type }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">6. 교통량</p>
+                <p style="margin-top:0">- {{ object.traffic }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">7. 신고 날짜</p>
+                <p style="margin-top:0">- {{ object.report.date }}</p>
                 <button class="btn btn-primary" onclick="back()">되돌아가기</button>
             </div>
         </div>
@@ -115,11 +125,11 @@
 
 <script>
     function back() {
-        window.location.href = "{% url 'report:report_create' %}";
+        window.location.href = "{% url 'info:info' %}";
     }
     var HOME_PATH = "{% static 'image' %}";
-    var latitude = {{object.latitude|default:37.3595316 }};
-    var longitude = {{object.longitude|default:127.1052133 }};
+    var latitude = {{object.report.latitude|default:37.3595316 }};
+    var longitude = {{object.report.longitude|default:127.1052133 }};
     var map = new naver.maps.Map("map", {
         center: new naver.maps.LatLng(latitude, longitude),
         zoom: 15,
@@ -128,7 +138,7 @@
         position: new naver.maps.LatLng(latitude, longitude),
         map: map,
         icon: {
-            url: HOME_PATH + '/marker.png',
+            url: HOME_PATH + '/caution.png',
             size: new naver.maps.Size(35, 40),
             scaledSize: new naver.maps.Size(35, 40),
         }
