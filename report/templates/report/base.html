@@ -39,6 +39,7 @@
             top: 1px;
             border-top: 1px solid #AAAAAA; /* 수평선 추가 */
             width: 100%;
+            background-color: transparent !important;
         }
         .nav-link.active{
             background-color: #007bff !important;
@@ -62,9 +63,9 @@
 </head>
 <body style="d">
 <div class="container-fluid">
-    <nav class="d-flex flex-column navbar navbar-expand-lg fixed-top">
-        <div class="container-fluid flex-column align-items-start">
-            <div class="navbar-content">
+    <nav class="d-flex flex-column navbar navbar-expand-lg fixed-top" style="background-color: transparent; padding: 0">
+        <div class="container-fluid flex-column align-items-start" style="background-color: transparent; padding: 0">
+            <div class="navbar-content" style="width: 100%; background-color: white;">
                 <a class="navbar-brand" href="{% url 'report:report_create' %}">
                     <img src="{% static 'image/person.png' %}" alt="Logo">
                 </a>
@@ -76,7 +77,7 @@
 
             <div class="nav nav-pills-container">
                 <ul class="nav nav-pills mt-2">
-                    <li class="nav-item">
+                    <li class="nav-item" style="background-color:white; border: 1px solid #ddd; border-radius: 8px; margin-right: 5px;">
                         <a class="nav-link text-black p-2 {% if request.path == '/' %} active {% endif %}" href="{% url 'report:report_create' %}">사진 업로드</a>
                     </li>
                     <li class="nav-item">
