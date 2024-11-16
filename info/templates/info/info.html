@@ -51,17 +51,35 @@
       height: 20px;
       margin-left: 5px;
     }
+    .table-container {
+        order: 1;
+    }
+
+    .map-container {
+        order: 2;
+    }
+    /* 반응형 스타일 */
+    @media (max-width: 768px) {
+        .row {
+            flex-direction: column-reverse; /* 열을 반전하여 지도 아래로 이동 */
+        }
+
+        .map-container {
+            margin-top: 20px; /* 지도와 위 콘텐츠 사이에 여백 추가 */
+        }
+    }
+
 </style>
 {% endblock %}
 
 {% block main_area %}
 <div class="content">
   <div class="row">
-    <div class="col-8">
+    <div class="col-12 col-md-8 map-container">
       <div id="map">
       </div>
     </div>
-    <div class="col-4">
+    <div class="col-12 col-md-4 table-container">
       <div class="icon d-flex justify-content-end">
         <p style="margin-bottom: 5px;">
            <img src="{% static '/image/warning1.png' %}" alt="circle">1순위
