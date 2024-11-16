@@ -88,6 +88,15 @@
         .success-card h3 {
             font-size: 1.3rem;
         }
+        .row {
+            flex-direction: column; /* 수직으로 배치 */
+            align-items: center; /* 가운데 정렬 */
+        }
+        #map {
+            width: 100%; /* 전체 너비 사용 */
+            height: 50vh; /* 지도의 높이를 줄임 */
+            margin-top: 20px; /* 카드와 지도 사이의 여백 추가 */
+        }
     }
 </style>
 {% endblock %}
@@ -109,6 +118,7 @@
         </div>
         <div class="col-12 col-md-6">
             <div id="map">
+
             </div>
     </div>
 </div>

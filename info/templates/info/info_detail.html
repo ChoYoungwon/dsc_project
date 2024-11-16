@@ -62,12 +62,12 @@
     }
 
     #map {
-            width: 80%;
-            height: 75vh;
-            position: relative;
-            margin: 0 auto;
-            display:flex;
-            align-content: center;
+        width: 80%;
+        height: 75vh;
+        position: relative;
+        margin: 0 auto;
+        display:flex;
+        align-content: center;
     }
     .container.content {
         padding-bottom: 30px; /* 원하는 패딩 크기 설정 */
@@ -87,6 +87,15 @@
         }
         .success-card h3 {
             font-size: 1.3rem;
+        }
+        .row {
+            flex-direction: column; /* 수직으로 배치 */
+            align-items: center; /* 가운데 정렬 */
+        }
+        #map {
+            width: 90%; /* 전체 너비 사용 */
+            height: 60vh; /* 지도의 높이를 줄임 */
+            margin-top: 20px; /* 카드와 지도 사이의 여백 추가 */
         }
     }
 </style>
