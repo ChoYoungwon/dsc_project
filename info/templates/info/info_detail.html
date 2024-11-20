@@ -112,17 +112,17 @@
                     <img style="margin-top: 0;" src="{{ object.report.image.url }}" alt="제출 사진">
                 </a>
                 <p class="text-head" style="margin-bottom: 0">2. 신고 위치 (위도, 경도)</p>
-                <p style="margin-top:0">- {{ object.report.latitude }}, {{ object.report.longitude }}</p>
+                <p style="margin-top:0">✔ {{ object.report.latitude }}, {{ object.report.longitude }}</p>
                 <p class="text-head mt-2" style="margin-bottom: 0">3. 링크ID</p>
-                <p style="margin-top:0">- {{ object.link_id}}</p>
-                <p class="text-head mt-2" style="margin-bottom: 0">4. 우선순위</p>
-                <p style="margin-top:0">- {{ object.priority }}</p>
-                <p class="text-head mt-2" style="margin-bottom: 0">5. 포트홀 타입</p>
-                <p style="margin-top:0">- {{ object.type }}</p>
-                <p class="text-head mt-2" style="margin-bottom: 0">6. 교통량</p>
-                <p style="margin-top:0">- {{ object.traffic }}</p>
+                <p style="margin-top:0">✔ {{ object.link_id}}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">4. 교통량</p>
+                <p style="margin-top:0">✔ {{ object.traffic }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">5. 평균 속력</p>
+                <p style="margin-top:0">✔ {{ object.average_speed }}</p>
+                <p class="text-head mt-2" style="margin-bottom: 0">6. 우선순위 가중치</p>
+                <p style="margin-top:0">✔ {{ object.priority }}</p>
                 <p class="text-head mt-2" style="margin-bottom: 0">7. 신고 날짜</p>
-                <p style="margin-top:0">- {{ object.report.date }}</p>
+                <p style="margin-top:0">✔ {{ object.report.date }}</p>
                 <button class="btn btn-primary" onclick="back()">되돌아가기</button>
             </div>
         </div>

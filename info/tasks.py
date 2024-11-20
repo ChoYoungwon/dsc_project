@@ -1,10 +1,8 @@
+# from .gis_convert.gis_conversion import gps_to_link_id
 from celery import shared_task
 from .models import Traffic, Priority
+from .api_call import link_id_api, yolo_api
 from report.models import Report
-from .gis_convert.gis_conversion import gps_to_link_id
-import requests
-import os
-from django.conf import settings
 
 @shared_task
 def make_priority_table(report_id):
@@ -12,36 +10,60 @@ def make_priority_table(report_id):
         report_instance = Report.objects.get(id=report_id)
         latitude = report_instance.latitude
         longitude = report_instance.longitude
-        link_id, distance = gps_to_link_id(latitude, longitude)
-        priority = None
-        type = "-1"
+        data_link = link_id_api(latitude, longitude)
+        print(report_id)
+        data_yolo = yolo_api(report_id)
+        print("yolo 전송 데이터 : ", data_yolo)
 
-        # try:
-        #     url = 'http://13.125.218.18:5000/predict'
-        #     image_path = os.path.join(settings.MEDIA_ROOT, report_instance.image.path)
-        #
-        #     with open(image_path, 'rb') as image_file:
-        #         files = {'file': image_file}
-        #         response = requests.post(url, files=files)
-        #
-        #     if response.status_code == 200:
-        #         json_data = response.json()
-        #         if json_data:
-        #             type = "2"
-        #     else:
-        #         print(f"Unexpected status code: {response.status_code}")
-        #
-        # except requests.exceptions.RequestException as e:
-        #     print("Error fetching data:", e)
+        link_id = None
+        lane_count = None
+        average_speed = None
+        passenger_car_traffic = None
+        bus_traffic = None
+        truck_traffic = None
+        traffic = None
+        is_frozen = None
+        severity = None
+
+        if data_yolo:
+            severity = float(data_yolo.get('result'))
+
+        if data_link.get("result") == "ok":
+            link_id = data_link.get("link_id")
+            lane_count = int(data_link.get("lane_count"))
+            average_speed = float(data_link.get("average_speed"))
+            passenger_car_traffic = int(data_link.get("passenger_car_traffic"))
+            bus_traffic = int(data_link.get("bus_traffic"))
+            truck_traffic = int(data_link.get("truck_traffic"))
+            is_frozen = int(data_link.get("is_frozen"))
+
+        # 최종 우선순위 연산
+        if data_link.get("result") == "ok":
+            if is_frozen:
+                priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count * 1.1
+                traffic = passenger_car_traffic * average_speed + bus_traffic + truck_traffic
+            else:
+                priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count
+                traffic = passenger_car_traffic * average_speed + bus_traffic + truck_traffic
+        else:
+            link_id = data_link.get("link_id")
+            priority = severity
+            average_speed = -1
 
         Priority.objects.create(
             report = report_instance,
+            priority = priority,
             link_id = link_id,
-            distance = distance,
-            priority=priority,
-            type=type,
-            traffic=None,
+            lane_count = lane_count,
+            average_speed = average_speed,
+            passenger_car_traffic = passenger_car_traffic,
+            bus_traffic = bus_traffic,
+            truck_traffic = truck_traffic,
+            traffic = traffic,
+            is_frozen = is_frozen,
+            severity = severity,
         )
+
     except Report.DoesNotExist:
         print("Report 인스턴스가 없습니다.")
 

@@ -8,3 +8,8 @@ class Report(models.Model):
     date = models.DateTimeField('DATE', auto_now_add=True)
     class Meta:
         ordering = ('date',)
+
+    def get_image_url(self):
+        if self.image:
+            return self.image.url
+        return None

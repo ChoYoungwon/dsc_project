@@ -6,6 +6,7 @@ from django.conf import settings
 app_name = 'report'
 urlpatterns = [
     path('', views.ReportCreateView.as_view(), name='report_create'),
+    path('enter-gps/<int:pk>/', views.ReportCreateView2.as_view(), name='enter_gps'),
     path('map/', views.MapTestView.as_view(), name='map'),
     path('report_success/<int:pk>/', views.ReportSuccessView.as_view(), name='report_success'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

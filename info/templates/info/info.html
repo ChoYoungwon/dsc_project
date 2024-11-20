@@ -58,6 +58,20 @@
     .map-container {
         order: 2;
     }
+
+    .button-container {
+        display: flex;
+        width: 100%;
+        justify-content: space-between; /* 버튼 간의 간격을 자동으로 조정 */
+        margin-bottom: 10px; /* 버튼 아래 여백 */
+    }
+
+    .btn-half {
+        flex: 1; /* 버튼이 같은 크기로 나뉨 */
+        text-align: center;
+        margin: 0 5px; /* 버튼 사이 간격 조절 */
+        box-sizing: border-box; /* 패딩과 테두리를 크기에 포함 */
+    }
     /* 반응형 스타일 */
     @media (max-width: 768px) {
         .row {
@@ -83,57 +97,121 @@
     <div class="col-12 col-md-4 table-container">
       <div class="icon d-flex justify-content-end">
         <p style="margin-bottom: 5px;">
-           <img src="{% static '/image/warning1.png' %}" alt="circle">1순위
-           <img src="{% static '/image/caution1.png' %}" alt="circle">2순위
-           <img src="{% static '/image/intend1.png' %}" alt="circle">그 외
+           <img src="{% static '/image/warning1.png' %}" alt="circle">교통량 반영
+           <img src="{% static '/image/caution1.png' %}" alt="circle">교통량 미반영
         </p>
       </div>
         <p class="text-end" style="font-size: 0.75rem; margin-bottom: 0;">각 우선순위를 누르면 해당 위치로 움직이고</p>
         <p class="text-end" style="font-size: 0.75rem; margin-bottom: 0;"> 링크 ID를 누를 시 자세한 정보가 나옵니다.</p>
-      <table>
-        <tr>
-          <th>우선순위</th>
-          <th>링크ID</th>
-          <th>균열 타입</th>
-          <th>교통량</th>
-          <th>등록일자</th>
-        </tr>
-        {% for instance in object_list %}
-        <tr>
-            <td><a href="#" class="priority-link" data-lat="{{instance.report.latitude}}" data-lng="{{instance.report.longitude}}">
-              {{instance.priority}}</a>
-            </td>
-            <td><a href="{% url 'info:detail' instance.report.id %}">
-              {{instance.link_id}} </a>
-            </td>
-            <td>{{instance.type}}</td>
-            <td>{{instance.traffic}}</td>
-            <td>{{instance.date}}</td>
-        </tr>
-        {% endfor %}
-      </table>
-      <div class="pagination">
-        <span class="step-links">
-            {% if page_obj.has_previous %}
-                <a href="?page=1" style="font-size: 0.75rem;">&laquo; 처음</a>
-                <a href="?page={{ page_obj.previous_page_number }}" style="font-size: 0.75rem;">이전</a>
-            {% endif %}
+        <div class="button-container d-flex d-grid" style="margin-bottom: 0">
+            <button id="show-traffic-present" class="btn btn-danger btn-half">교통량 반영</button>
+            <button id="show-traffic-absent" class="btn btn-light btn-half">교통량 미반영</button>
+        </div>
+        <div id="traffic-present-table" style="display: none;">
+            <table>
+                <tr>
+                  <th>우선순위</th>
+                  <th>링크ID</th>
+                  <th>교통량</th>
+                  <th>등록일자</th>
+                </tr>
+                {% for instance in traffic_present %}
+                <tr>
+                    <td><a href="#" class="priority-link" data-lat="{{instance.report.latitude}}" data-lng="{{instance.report.longitude}}">
+                      {{ forloop.counter }}</a>
+                    </td>
+                    <td><a href="{% url 'info:detail' instance.report.id %}">
+                      {{instance.link_id}} </a>
+                    </td>
+                    <td>{{instance.traffic}}</td>
+                    <td>{{instance.date}}</td>
+                </tr>
+                {% endfor %}
+            </table>
+              <div class="pagination">
+                {% if traffic_present.has_previous %}
+                    <a href="?page_present=1&page_absent={{ traffic_absent.number }}">처음</a>
+                    <a href="?page_present={{ traffic_present.previous_page_number }}&page_absent={{ traffic_absent.number }}">이전</a>
+                {% endif %}
 
-            <span class="current" style="font-size: 0.75rem;">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
+                <span>
+                    Page {{ traffic_present.number }} of {{ traffic_present.paginator.num_pages }}
+                </span>
 
-            {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" style="font-size: 0.75rem;">다음</a>
-                <a href="?page={{ page_obj.paginator.num_pages }}" style="font-size: 0.75rem;">마지막 &raquo;</a>
-            {% endif %}
-        </span>
-      </div>
+                {% if traffic_present.has_next %}
+                    <a href="?page_present={{ traffic_present.next_page_number }}&page_absent={{ traffic_absent.number }}">다음</a>
+                    <a href="?page_present={{ traffic_present.paginator.num_pages }}&page_absent={{ traffic_absent.number }}">마지막</a>
+                {% endif %}
+              </div>
+        </div>
+
+        <div id="traffic-absent-table" style="display: none;">
+            <table>
+                <tr>
+                    <th>우선순위</th>
+                    <th>링크ID</th>
+                    <th>등록일자</th>
+                </tr>
+                {% for instance in traffic_absent %}
+                <tr>
+                    <td><a href="#" class="priority-link" data-lat="{{instance.report.latitude}}" data-lng="{{instance.report.longitude}}">
+                        {{ forloop.counter }}</a>
+                    </td>
+                    <td><a href="{% url 'info:detail' instance.report.id %}">
+                        {{ instance.link_id }}</a>
+                    </td>
+                    <td>{{ instance.date }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            <div class="pagination">
+                {% if traffic_absent.has_previous %}
+                    <a href="?page_present={{ traffic_present.number }}&page_absent=1">처음</a>
+                    <a href="?page_present={{ traffic_present.number }}&page_absent={{ traffic_absent.previous_page_number }}">이전</a>
+                {% endif %}
+
+                <span>
+                    Page {{ traffic_absent.number }} of {{ traffic_absent.paginator.num_pages }}
+                </span>
+
+                {% if traffic_absent.has_next %}
+                    <a href="?page_present={{ traffic_present.number }}&page_absent={{ traffic_absent.next_page_number }}">다음</a>
+                    <a href="?page_present={{ traffic_present.number }}&page_absent={{ traffic_absent.paginator.num_pages }}">마지막</a>
+                {% endif %}
+            </div>
+        </div>
     </div>
   </div>
 </div>
 
 <script>
+    document.getElementById('show-traffic-present').addEventListener('click', function() {
+        // 테이블 표시 상태 변경
+        document.getElementById('traffic-present-table').style.display = 'block';
+        document.getElementById('traffic-absent-table').style.display = 'none';
+
+        // 버튼 스타일 변경
+        this.classList.add('btn-danger');
+        this.classList.remove('btn-light');
+        document.getElementById('show-traffic-absent').classList.add('btn-light');
+        document.getElementById('show-traffic-absent').classList.remove('btn-danger');
+
+    });
+
+    document.getElementById('show-traffic-absent').addEventListener('click', function() {
+        // 테이블 표시 상태 변경
+        document.getElementById('traffic-present-table').style.display = 'none';
+        document.getElementById('traffic-absent-table').style.display = 'block';
+
+        // 버튼 스타일 변경
+        this.classList.add('btn-danger');
+        this.classList.remove('btn-light');
+        document.getElementById('show-traffic-present').classList.add('btn-light');
+        document.getElementById('show-traffic-present').classList.remove('btn-danger');
+    });
+
+    // 기본적으로 교통량 반영 테이블 표시
+    document.getElementById('traffic-present-table').style.display = 'block';
   var HOME_PATH = "{% static 'image' %}";
   var map = new naver.maps.Map("map", {
         center: new naver.maps.LatLng(36.5823435, 127.1250753),
@@ -145,11 +223,11 @@
         {
           latitude: {{ instance.report.latitude }},
           longitude: {{ instance.report.longitude }},
-          priority: "{{ instance.priority }}",  // 문자열로 감쌈
-          link_id: "{{ instance.link_id }}",  // 문자열로 감쌈
-          type: "{{ instance.type }}",  // 문자열로 감쌈
-          traffic: "{{ instance.traffic }}",  // 문자열로 감쌈
-          date: "{{ instance.date }}",  // 문자열로 감쌈
+          priority: "{{ instance.priority }}",
+          link_id: "{{ instance.link_id }}",
+          average_speed: "{{ instance.average_speed }}",
+          traffic: "{{instance.traffic }}",
+          date: "{{ instance.date }}",
         },
       {% endfor %}
     ];
@@ -157,12 +235,10 @@
   locations.forEach(function(location){
 
     var icornUrl;
-    if (location.priority === "1") {
+    if (location.traffic !== "None") {
       icornUrl = HOME_PATH + '/warning1.png';
-    } else if (location.priority === "2") {
-      icornUrl = HOME_PATH + '/caution1.png';
     } else {
-      icornUrl = HOME_PATH + '/intend1.png';
+      icornUrl = HOME_PATH + '/caution1.png';
     }
 
     var marker = new naver.maps.Marker({
@@ -180,7 +256,6 @@
           content: '<div style="padding:10px;">' +
                     '<strong>우선순위:</strong> ' + location.priority + '<br>' +
                     '<strong>링크ID:</strong> ' + location.link_id + '<br>' +
-                    '<strong>균열 타입:</strong> ' + location.type + '<br>' +
                     '<strong>교통량:</strong> ' + location.traffic + '<br>' +
                     '<strong>등록일자:</strong> ' + location.date +
                     '</div>'

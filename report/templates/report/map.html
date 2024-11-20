@@ -386,8 +386,8 @@
 
         function sendCoordinate() {
             if(window.opener) {
-                window.opener.document.getElementById('latitude').value = selectedLatitude;
-                window.opener.document.getElementById('longitude').value = selectedLongitude;
+                window.opener.document.getElementById('latitude').value = parseFloat(selectedLatitude);
+                window.opener.document.getElementById('longitude').value = parseFloat(selectedLongitude);
                 console.log(selectedLatitude);
                 console.log(selectedLongitude);
                 window.opener.checkInputs();

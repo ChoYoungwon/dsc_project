@@ -1,6 +1,11 @@
 {% extends 'report/base.html' %}
 {% load static %}
 {% block extra-style %}
+{% if request.session.alert_message %}
+<script>
+    alert("{{ request.session.alert_message|escapejs }}");
+</script>
+{% endif %}
 <style>
     .content {
         position: relative;
@@ -86,7 +91,7 @@
     </div>
 
     <div class="input col-12 col-md-5 d-flex justify-content-center justify-content-md-start mt-md-0 mt-2" style="margin-left: -20px;">
-      <form action="{% url 'report:report_create' %}" method="post" enctype="multipart/form-data">
+      <form action="{% url 'report:enter_gps' pk=pk %}" method="post" enctype="multipart/form-data">
         <div class="row" style="gap: 0; margin: 0; padding: 0;">
           <div class="col-3 d-flex justify-content-start align-items-end" style="margin: 0; padding: 0;">
             <img id="hand" src="{% static 'image/hand.png' %}" alt="hand" style="width: 56px; height: 250px;"><br>
@@ -95,11 +100,19 @@
             <div class="d-flex flex-column align-items-center form-container">
               {% csrf_token %}
               <label for="image-input">
-                <img id="image-preview" src="{% static 'image/photo.png' %}" alt="photo" style="width: 320px; height: 320px;">
+                <img id="image-preview" src="{{ image_url }}" alt="photo" style="width: 320px; height: 320px;">
               </label>
-              <div id="request_image" class="btn mt-4" style="width:40vh; text-align: center; background-color: #32a86f; color:white; display: block;">사진을 등록해 주세요</div>
-              <input type="file" id="image-input" name="image" accept="image/*" style="display: none;" onchange="previewImage(event)">
-              <input type="submit" class="btn mt-4 btn-primary" style="width: 40vh; display: none;" value="사진 제출하기">
+              <button id="gps-input" type="button" class="btn mt-4 btn-success" onclick="openMap()" style="width: 40vh">
+                GPS 위치 탐색
+              </button>
+              <p id="note" class="text-center" style="font-size: 0.75rem; margin-bottom: 0; color: blue; display: block">도로의 파손 위치를 제출해 주세요</p>
+              <label for="latitude" style="display: none;">Latitude</label>
+              <input type="text" id="latitude" name="latitude" style="display: none;" oninput="checkInputs()">
+
+              <label for="longitude" style="display: none;"></label>
+              <input type="text" id="longitude" name="longitude" style="display: none;" oninput="checkInputs()">
+
+              <input type="submit" class="btn mt-4 btn-primary" style="width: 40vh; display: none;" value="제출하기">
             </div>
           </div>
         </div>
@@ -109,21 +122,6 @@
 </div>
 
 <script>
-  // 이미지 미리보기 함수
-  function previewImage(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      document.getElementById('image-preview').src = e.target.result;
-    }
-
-    if (file) {
-      reader.readAsDataURL(file);
-      checkInputs();
-    }
-  }
-
   function openMap() {
     window.open("{% url 'report:map' %}",
     "위치 선택",
@@ -131,16 +129,18 @@
   }
 
   function checkInputs() {
-    const imageInput = document.getElementById('image-input').files.length > 0;
-    console.log(imageInput);
+    const latitude = document.getElementById('latitude').value.trim();
+    const longitude = document.getElementById('longitude').value.trim();
 
-    if (imageInput) {
+    console.log(latitude, longitude);
+
+    if (latitude && longitude) {
       document.querySelector('input[type="submit"]').style.display = 'block';
-      document.querySelector('#request_image').style.display = 'none'
+      document.querySelector('#gps-input').style.display = 'none';
+      document.querySelector('#note').style.display = 'none';
     }
     else {
       document.querySelector('input[type="submit"]').style.display = 'none';
-      document.querySelector('#request_image').style.display = 'block'
     }
   }
 </script>
