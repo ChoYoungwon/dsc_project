@@ -40,7 +40,7 @@ def make_priority_table(report_id):
         # 최종 우선순위 연산
         if data_link.get("result") == "ok":
             if is_frozen:
-                priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count * 1.1
+                priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count * 1.2
                 traffic = passenger_car_traffic * average_speed + bus_traffic + truck_traffic
             else:
                 priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count
