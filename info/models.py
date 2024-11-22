@@ -8,7 +8,7 @@ class Traffic(models.Model):
 class Priority(models.Model):
     report = models.OneToOneField(Report, on_delete=models.CASCADE, related_name='priority', primary_key=True)
     priority = models.FloatField(null=True, blank=True)
-    link_id = models.IntegerField(null=True, blank=True)
+    link_id = models.CharField(max_length=255, null=True, blank=True)
     lane_count = models.IntegerField(null=True, blank=True)
     average_speed = models.FloatField(null=True, blank=True)
     passenger_car_traffic = models.IntegerField(null=True, blank=True)

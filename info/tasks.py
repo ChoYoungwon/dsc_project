@@ -29,7 +29,7 @@ def make_priority_table(report_id):
             severity = float(data_yolo.get('result'))
 
         if data_link.get("result") == "ok":
-            link_id = data_link.get("link_id")
+            link_id = str(data_link.get("link_id"))
             lane_count = int(data_link.get("lane_count"))
             average_speed = float(data_link.get("average_speed"))
             passenger_car_traffic = int(data_link.get("passenger_car_traffic"))
@@ -46,7 +46,7 @@ def make_priority_table(report_id):
                 priority = severity * (((1 * passenger_car_traffic) + (100 * bus_traffic) + (truck_traffic * 270)) * average_speed) * 0.35 / lane_count
                 traffic = passenger_car_traffic * average_speed + bus_traffic + truck_traffic
         else:
-            link_id = data_link.get("link_id")
+            link_id = str(data_link.get("link_id"))
             priority = severity
             average_speed = -1
 
