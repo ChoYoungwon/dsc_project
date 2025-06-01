@@ -15,7 +15,7 @@
 >	3. 평균 속도 데이터
 >3. 행정안전부_상습 결빙 구간
 
-## 1. 구현 설계
+## 1. 웹 설계
 ![image](https://github.com/user-attachments/assets/11f9e2f5-cf31-495c-acc7-eb536c63f80d)
 
 ## 1-1. 시스템 전체 구성
