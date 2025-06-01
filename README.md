@@ -144,3 +144,14 @@ http://34.64.246.251:5000/linkStatus
     "longitude": 127.1498846
 }
 ```
+
+### 웹 페이지
+#### 메인페이지
+![image](https://github.com/user-attachments/assets/9f392a59-a1b7-4d05-bbb0-d26e0b6a1d64)
+#### 위치 등록
+![image](https://github.com/user-attachments/assets/f96856a3-3adb-43f1-bed7-36081332fb9d)
+#### 신고사항 대시 보드
+![image](https://github.com/user-attachments/assets/91dd3495-4167-48ce-82fb-c5a30a54d1a8)
+
+
+
