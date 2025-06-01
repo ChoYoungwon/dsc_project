@@ -1,12 +1,12 @@
-> [!NOTE] DSC 오픈 데이터 활용 스타트업 챌린지
+## DSC 오픈 데이터 활용 스타트업 챌린지
 > 주제 : AI 기반 도로 정비 분석 시스템
 > 기간 : '24년 10~11월
 > 
->필요성: 
+### 필요성: 
 >1. 도로 보수의 필요성 증가(기후 변화, 포트홀 증가, 관련 예산 증가)
 >2. 비효율적인 도로 보수 시스템(인력 및 자원 부족, 도로 보수 탐색 차량이 한정적)
 >
- 활용 데이터
+### 활용 데이터
 >1. AI HUB 고해상도 도로노면 이미지 데이터
 >	1. 23년, 노면상태를 촬영한 고해상도 도로노면 이미지 데이터셋)
 >2. View-T의 교통자료(노드 링크로 저장되어있음) - 22년도 전일 데이터
@@ -16,10 +16,11 @@
 >3. 행정안전부_상습 결빙 구간
 
 ## 1. 구현 설계
-![[Pasted image 20241010194338.png]]
+![image](https://github.com/user-attachments/assets/11f9e2f5-cf31-495c-acc7-eb536c63f80d)
 
 ## 1-1. 시스템 전체 구성
-![[Pasted image 20241122001354.png]]
+![image](https://github.com/user-attachments/assets/6574dfde-fc53-4a8d-be26-e40e7cb38cc4)
+
 
 
 ## 2. 필요 기능
@@ -102,10 +103,10 @@ traffic_info
 | road_average_speed_data |
 | road_data               |
 
-**road_data 테이블**
-+-----------------------+---------------+------+-----+---------+-------+
+### road_data 테이블
+
 | Field                 | Type          | Null | Key | Default | Extra |
-+-----------------------+---------------+------+-----+---------+-------+
+|-----------------------|---------------|------|-----|---------|-------|
 | id                    | int           | NO   | PRI | NULL    |       |
 | link_id               | varchar(1000) | YES  |     | NULL    |       |
 | road_grade            | varchar(50)   | YES  |     | NULL    |       |
@@ -118,18 +119,14 @@ traffic_info
 | bus_traffic           | int           | YES  |     | NULL    |       |
 | truck_traffic         | int           | YES  |     | NULL    |       |
 | is_frozen             | tinyint(1)    | YES  |     | 0       |       |
-+-----------------------+---------------+------+-----+---------+-------+
-12 rows in set (0.00 sec)
 
-**road_average_speed_data 테이블**
-+---------------+---------------+------+-----+---------+-------+
+### road_average_speed_data 테이블
+
 | Field         | Type          | Null | Key | Default | Extra |
-+---------------+---------------+------+-----+---------+-------+
+|---------------|---------------|------|-----|---------|-------|
 | id            | int           | NO   | PRI | NULL    |       |
 | link_id       | varchar(1000) | YES  |     | NULL    |       |
 | average_speed | int           | YES  |     | NULL    |       |
-+---------------+---------------+------+-----+---------+-------+
-3 rows in set (0.00 sec)
 
 api 서버 테스트용
 
